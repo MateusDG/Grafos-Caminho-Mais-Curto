@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
 import heapq
 
@@ -7,6 +7,11 @@ class ImagePathFinder:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Seletor de Ponto de Imagem")
+        self.root.geometry("600x500")  # Define um tamanho inicial para a janela
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")  # Escolha um tema como 'clam', 'alt', 'default', 'classic'
 
         self.ponto_inicio = None
         self.ponto_destino = None
@@ -17,28 +22,35 @@ class ImagePathFinder:
         self._setup_ui()
 
     def _setup_ui(self):
-        self.btn_carregar = tk.Button(self.root, text="Carregar Imagem", command=self.escolher_imagem)
-        self.btn_carregar.pack()
+        frame = ttk.Frame(self.root, padding="10")
+        frame.pack(expand=True, fill=tk.BOTH)
 
-        self.btn_buscar_caminho = tk.Button(self.root, text="Encontrar Caminho", command=self.executar_busca_caminho)
-        self.btn_buscar_caminho.pack()
+        self.btn_carregar = ttk.Button(frame, text="Carregar Imagem", command=self.escolher_imagem)
+        self.btn_carregar.pack(expand=True, pady=5)
 
-        self.btn_resetar = tk.Button(self.root, text="Resetar Imagem", command=self.resetar_imagem)
-        self.btn_salvar = tk.Button(self.root, text="Salvar Imagem", command=self.salvar_imagem)
+        self.btn_buscar_caminho = ttk.Button(frame, text="Encontrar Caminho", command=self.executar_busca_caminho)
+        self.btn_buscar_caminho.pack(expand=True, pady=5)
+
+        self.btn_resetar = ttk.Button(frame, text="Resetar Imagem", command=self.resetar_imagem)
+        self.btn_resetar.pack_forget()
+
+        self.btn_salvar = ttk.Button(frame, text="Salvar Imagem", command=self.salvar_imagem)
+        self.btn_salvar.pack_forget()
         
-        self.inicio_label = tk.Label(self.root, text="")
-        self.inicio_label.pack()
+        self.caminho_label = ttk.Label(frame, text="")
+        self.caminho_label.pack(pady=5)
 
-        self.destino_label = tk.Label(self.root, text="")
-        self.destino_label.pack()
+        self.label_imagem = ttk.Label(frame)
+        self.label_imagem.pack(expand=True, pady=10)
+        
+        self.inicio_label = ttk.Label(frame, text="")
+        self.inicio_label.pack(pady=5)
 
-        self.caminho_label = tk.Label(self.root, text="")
-        self.caminho_label.pack()
+        self.destino_label = ttk.Label(frame, text="")
+        self.destino_label.pack(pady=5)
 
-
-        self.label_imagem = tk.Label(self.root)
-        self.label_imagem.pack()
-        self.label_imagem.bind("<Button-1>", self.on_click)
+        self.status_label = ttk.Label(frame, text="")
+        self.status_label.pack()
 
     def escolher_imagem(self):
         try:
@@ -162,8 +174,6 @@ class ImagePathFinder:
                 if caminho_encontrado:
                     self.desenhar_caminho(caminho_encontrado)
                     self.caminho_label.config(text="Caminho mais curto encontrado.")
-
-                    # Mostrar os botões de resetar e salvar após encontrar o caminho
                     self.btn_resetar.pack()
                     self.btn_salvar.pack()
                 else:
