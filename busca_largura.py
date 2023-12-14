@@ -3,7 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
 import heapq
 
-class ImagePathFinder:
+class Teste:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Seletor de Ponto de Imagem")
@@ -212,7 +212,7 @@ class ImagePathFinder:
             messagebox.showerror("Erro ao Carregar Imagem", str(e))
 
 def main():
-    app = ImagePathFinder()
+    app = Teste()
     app.root.mainloop()
 
 if __name__ == "__main__":
