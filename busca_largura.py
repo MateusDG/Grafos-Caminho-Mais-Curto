@@ -1,17 +1,17 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
-import heapq
+from collections import deque
 
 class Teste:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Seletor de Ponto de Imagem")
-        self.root.geometry("600x500")  # Define um tamanho inicial para a janela
+        self.root.geometry("600x500")
 
         # Estilo
         self.style = ttk.Style()
-        self.style.theme_use("clam")  # Escolha um tema como 'clam', 'alt', 'default', 'classic'
+        self.style.theme_use("clam")
 
         self.ponto_inicio = None
         self.ponto_destino = None
@@ -121,35 +121,30 @@ class Teste:
                             grafo[(x, y)].append((nx, ny))
         return grafo
 
-    def dijkstra(self, grafo, inicio, destino):
-        fila_prioridade = [(0, inicio)]
-        visitados = set()
-        caminho = {inicio: None}
+    def bfs(self, grafo, inicio, destino):
+        fila = deque([inicio])
+        visitados = {inicio: None}
 
-        while fila_prioridade:
-            dist_atual, atual = heapq.heappop(fila_prioridade)
-            if atual in visitados:
-                continue
-            visitados.add(atual)
-
+        while fila:
+            atual = fila.popleft()
+            
             if atual == destino:
                 break
 
             for vizinho in grafo[atual]:
                 if vizinho not in visitados:
-                    dist_vizinho = dist_atual + 1
-                    heapq.heappush(fila_prioridade, (dist_vizinho, vizinho))
-                    caminho[vizinho] = atual
+                    fila.append(vizinho)
+                    visitados[vizinho] = atual
 
-        if destino not in caminho:
+        if destino not in visitados:
             return None
 
         percurso = []
         while destino is not None:
             percurso.append(destino)
-            destino = caminho[destino]
+            destino = visitados[destino]
         return percurso[::-1]
-
+    
     def desenhar_caminho(self, caminho):
         with Image.open(self.caminho_imagem) as img:
             img = img.convert('RGB')
@@ -170,7 +165,7 @@ class Teste:
 
             if self.ponto_inicio and self.ponto_destino:
                 grafo = self.construir_grafo(matriz)
-                caminho_encontrado = self.dijkstra(grafo, self.ponto_inicio, self.ponto_destino)
+                caminho_encontrado = self.bfs(grafo, self.ponto_inicio, self.ponto_destino)
                 if caminho_encontrado:
                     self.desenhar_caminho(caminho_encontrado)
                     self.caminho_label.config(text="Caminho mais curto encontrado.")
