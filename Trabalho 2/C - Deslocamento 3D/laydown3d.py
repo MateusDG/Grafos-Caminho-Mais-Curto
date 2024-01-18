@@ -4,7 +4,6 @@ from PIL import Image, ImageTk
 import heapq
 
 # Lógica Geral do Meu Código:
-# Aqui está o que eu criei:
 # 1. Carregamento de Imagens: Posso carregar imagens que representam diferentes andares de um prédio.
 # 2. Exploração Vertical: Criei botões para "subir" e "descer" entre esses andares, como num prédio real.
 # 3. Pontos de Interesse: Escolho pontos de início e destino nas imagens para simular uma jornada.
