@@ -3,24 +3,45 @@ from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
 import heapq
 
+# Lógica Geral do Meu Código:
+# Aqui está o que eu criei:
+# 1. Carregamento de Imagens: Posso carregar imagens que representam diferentes andares de um prédio.
+# 2. Exploração Vertical: Criei botões para "subir" e "descer" entre esses andares, como num prédio real.
+# 3. Pontos de Interesse: Escolho pontos de início e destino nas imagens para simular uma jornada.
+# 4. Busca de Caminho: Utilizo o algoritmo de Dijkstra para traçar o melhor caminho, considerando a transição entre andares.
+# 5. Visualização do Caminho: Após encontrar o caminho, o desenho diretamente nas imagens para uma visão clara.
+
+# Resumo da Minha Lógica Tridimensional:
+# Neste programa, simulo um espaço tridimensional usando imagens como andares de um prédio:
+# 1. Imagens Como Andares: Cada imagem que carrego se torna um andar no meu mundo virtual.
+# 2. Navegação Vertical: Desenvolvi uma maneira de "viajar" entre os andares com facilidade.
+# 3. Definindo o Roteiro: Marcar os pontos de início e fim me permite criar uma experiência tridimensional.
+# 4. Planejamento de Rotas: Meu algoritmo leva em conta até as escadas entre os andares para encontrar o melhor caminho.
+# 5. O Caminho Revelado: Mostro o caminho encontrado diretamente nas imagens, reforçando a sensação de profundidade.
+
 class Teste3D:
     def __init__(self):
+        # Configuração inicial da janela Tkinter
         self.root = tk.Tk()
         self.root.title("Seletor de Ponto de Imagem 3D")
         self.root.geometry("600x600")  # Aumentei um pouco o tamanho para acomodar os controles extras
 
+        # Estilo para os widgets
         self.style = ttk.Style()
         self.style.theme_use("clam")
 
+        # Variáveis de estado para controle
         self.ponto_inicio = None
         self.ponto_destino = None
         self.imagens_atuais = []  # Lista para armazenar as imagens dos diferentes andares
         self.caminhos_imagem = []  # Lista para armazenar os caminhos dos arquivos de imagem
-        self.fator_escala = 3
+        self.fator_escala = 3   # Fator de escala para redimensionar as imagens
 
+        # Configuração da interface do usuário  
         self._setup_ui()
 
     def _setup_ui(self):
+        # Configuração dos elementos da interface do usuário
         frame = ttk.Frame(self.root, padding="10")
         frame.pack(expand=True, fill=tk.BOTH)
 
@@ -41,7 +62,7 @@ class Teste3D:
         self.btn_buscar_caminho = ttk.Button(frame, text="Encontrar Caminho", command=self.executar_busca_caminho)
         self.btn_buscar_caminho.pack(expand=True, pady=5)
 
-        # Mais alguns botões que a gente vai usar depois.
+        #Botão para resetar e salvar imagem
         self.btn_resetar = ttk.Button(frame, text="Resetar Imagem", command=self.resetar_imagem)
         self.btn_resetar.pack_forget()
 
@@ -64,30 +85,32 @@ class Teste3D:
         self.status_label = ttk.Label(frame, text="")
         self.status_label.pack()
 
+    # Função para escolher e carregar as imagens dos andares
     def escolher_imagens(self):
         caminhos_imagens = filedialog.askopenfilenames()
         if caminhos_imagens:
             self.caminhos_imagem = caminhos_imagens
-            print("Caminhos das imagens carregadas:", self.caminhos_imagem)  # Debug: Verificar os caminhos das imagens carregadas
+            # Carrega as imagens e as converte em matrizes de pixels para processamento
             self.imagens_atuais = [Image.open(caminho) for caminho in caminhos_imagens]
             self.matrizes = [self.ler_bitmap(caminho) for caminho in self.caminhos_imagem]
             self.ponto_inicio, self.ponto_destino = self.encontrar_pontos()
             self.atualizar_exibicao_imagem(0)  # Exibe a primeira imagem
-            print("Imagens carregadas:", self.imagens_atuais)
-            print("Imagens redimensionadas:", self.imagens_redimensionadas)
 
-    
+    # Funções para subir e descer entre os andares
     def subir_andar(self):
+        # Aumenta o índice do andar atual, se possível, e atualiza a imagem exibida
         if self.andar_atual < len(self.imagens_atuais) - 1:
             self.andar_atual += 1
-            self.atualizar_exibicao_imagem(self.andar_atual)  # Passa o andar atual como argumento
+            self.atualizar_exibicao_imagem(self.andar_atual)
 
     def descer_andar(self):
+        # Diminui o índice do andar atual, se possível, e atualiza a imagem exibida
         if self.andar_atual > 0:
             self.andar_atual -= 1
-            self.atualizar_exibicao_imagem(self.andar_atual)  # Passa o andar atual como argumento
+            self.atualizar_exibicao_imagem(self.andar_atual)
 
     def atualizar_exibicao_imagem(self, andar):
+        # Atualiza a imagem exibida na interface com base no andar especificado
         if 0 <= andar < len(self.imagens_atuais):
             self.andar_atual = andar
             imagem = self.imagens_atuais[andar]
@@ -97,21 +120,20 @@ class Teste3D:
             self.label_imagem.config(image=foto)
             self.label_imagem.image = foto
             self.andar_label.config(text=f"Andar Atual: {self.andar_atual}")
-            print("Atualizando imagem do andar:", andar)
-            print("Tamanho da imagem redimensionada:", imagem.size)
-            
+
     def ler_bitmap(self, caminho_arquivo):
+        # Converte uma imagem em uma matriz de pixels para análise
         with Image.open(caminho_arquivo) as img:
             img = img.convert('RGB')
             largura, altura = img.size
             pixels = list(img.getdata())
             matriz_pixels = [pixels[i * largura:(i + 1) * largura] for i in range(altura)]
-            return matriz_pixels  # Retornar apenas a matriz de pixels
-
+            return matriz_pixels
 
     def encontrar_pontos(self):
-        cor_inicio = (237, 28, 36)  # Nova cor de início
-        cor_destino = (0, 255, 0)  # Verde
+        # Identifica os pontos de início e destino nas imagens com base nas cores específicas
+        cor_inicio = (237, 28, 36)  # Cor vermelha para o ponto de início
+        cor_destino = (0, 255, 0)  # Cor verde para o ponto de destino
         ponto_inicio = None
         pontos_destino = []
 
@@ -127,6 +149,7 @@ class Teste3D:
 
             for y in range(altura):
                 for x in range(largura):
+                    # Verifica a cor do pixel para identificar os pontos de interesse
                     if matriz[y][x] == cor_inicio and andar == 0:
                         ponto_inicio_andar = (x, y, andar)
                         print(f"Ponto de início encontrado no andar {andar}: {ponto_inicio_andar}")
@@ -142,6 +165,7 @@ class Teste3D:
 
 
     def construir_grafo(self):
+        # Cria um grafo representando conexões possíveis entre pontos nas imagens
         altura = len(self.matrizes[0])
         largura = len(self.matrizes[0][0])
         num_andares = len(self.matrizes)
@@ -150,13 +174,15 @@ class Teste3D:
         for andar in range(num_andares):
             for y in range(altura):
                 for x in range(largura):
+                    # Adiciona conexões válidas no grafo, evitando pixels pretos (considerados intransitáveis)
                     if self.matrizes[andar][y][x] != (0, 0, 0):  # Se não é pixel preto
                         if (x, y, andar) not in grafo:
                             grafo[(x, y, andar)] = []
+                        # Adiciona conexões para pixels adjacentes
                         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                             nx, ny = x + dx, y + dy
                             if 0 <= nx < largura and 0 <= ny < altura and self.matrizes[andar][ny][nx] != (0, 0, 0):
-                                # Atribuir peso com base na cor do pixel
+                                # Define o peso com base na cor do pixel
                                 cor_pixel = self.matrizes[andar][ny][nx]
                                 if cor_pixel == (128, 128, 128):  # Cinza escuro
                                     peso = 2
@@ -166,7 +192,7 @@ class Teste3D:
                                     peso = 1
                                 grafo[(x, y, andar)].append((nx, ny, andar, peso))
         
-        # Conexões entre andares
+        # Adiciona conexões verticais entre andares
         for andar in range(num_andares - 1):
             for y in range(altura):
                 for x in range(largura):
@@ -185,6 +211,8 @@ class Teste3D:
         return grafo
 
     def dijkstra_para_mais_proximo(self, grafo, inicio, destinos):
+        # Implementação do algoritmo de Dijkstra para encontrar o caminho mais curto
+        # no grafo até o destino mais próximo
         dist = {v: float('inf') for v in grafo}
         dist[inicio] = 0
         pq = [(0, inicio)]
@@ -194,13 +222,13 @@ class Teste3D:
             distancia_atual, vertice_atual = heapq.heappop(pq)
 
             if vertice_atual in destinos:
-                # Reconstruir o caminho
+                # Reconstruir o caminho a partir do ponto de destino encontrado
                 caminho = []
                 atual = vertice_atual
                 while atual is not None:
                     caminho.append(atual)
                     atual = anterior[atual]
-                return caminho[::-1]
+                return caminho[::-1] # Retorna o caminho em ordem inversa
 
             for vizinho in grafo[vertice_atual]:
                 nx, ny, nandar, peso = vizinho
@@ -213,6 +241,7 @@ class Teste3D:
         return None  # Retorna None se nenhum caminho for encontrado
 
     def desenhar_caminho(self, caminho):
+        # Desenha o caminho encontrado nas imagens dos andares
         imagens_atualizadas = []
         for andar in range(len(self.imagens_atuais)):
             img = self.imagens_atuais[andar].copy()
@@ -230,26 +259,27 @@ class Teste3D:
                             cor = (255, 0, 0)  # Vermelho para transições de andar
                     pixels[x, y] = cor
 
-            # Redimensiona e salva a imagem atualizada
+            # Redimensiona e adiciona a imagem atualizada à lista
             tamanho_novo = (img.width * self.fator_escala, img.height * self.fator_escala)
             img = img.resize(tamanho_novo, Image.NEAREST)
             imagens_atualizadas.append(img)
 
-        # Atualiza a visualização na interface
+        # Atualiza a visualização na interface com a primeira imagem do caminho
         self.exibir_imagem_atualizada(imagens_atualizadas)
 
     def exibir_imagem_atualizada(self, imagens_atualizadas):
-        # Exibe a primeira imagem do caminho
+        # Exibe a imagem atualizada na interface do usuário
         if imagens_atualizadas:
             imagem_inicial = imagens_atualizadas[0]
             foto = ImageTk.PhotoImage(imagem_inicial)
             self.label_imagem.config(image=foto)
             self.label_imagem.image = foto
-            # Salva as imagens atualizadas para navegação
+            # Atualiza a lista de imagens atuais com as imagens modificadas
             self.imagens_atuais = imagens_atualizadas
 
 
     def executar_busca_caminho(self):
+        # Executa o processo de busca de caminho
         self.ponto_inicio, pontos_destino = self.encontrar_pontos()
         if not self.ponto_inicio or not pontos_destino:
             messagebox.showwarning("Aviso", "Pontos de início e/ou destino não identificados.")
@@ -266,11 +296,11 @@ class Teste3D:
             messagebox.showerror("Erro", "Caminho não encontrado.")
 
     def resetar_imagem(self):
-        # Resetar todas as imagens para o estado original
+        # Restaura todas as imagens para o estado original
         self.imagens_atuais = [Image.open(caminho) for caminho in self.caminhos_imagem]
         self.atualizar_exibicao_imagem(self.andar_atual)
 
-        # Resetar os pontos de início e destino
+        # Reseta os pontos de início e destino e atualiza a interface
         self.ponto_inicio = None
         self.ponto_destino = None
         self.inicio_label.config(text="Ponto de início desmarcado.")
@@ -281,6 +311,7 @@ class Teste3D:
 
 
     def salvar_imagem(self):
+        # Permite ao usuário salvar as imagens modificadas
         for i, imagem in enumerate(self.imagens_atuais):
             # Solicitar ao usuário um local e nome de arquivo para salvar cada imagem
             caminho_salvar = filedialog.asksaveasfilename(
@@ -298,6 +329,7 @@ class Teste3D:
             messagebox.showinfo("Salvar Imagens", "Imagens salvas com sucesso.")
 
     def carregar_imagem(self, caminho_imagem):
+        # Carrega uma imagem específica e a exibe na interface do usuário
         try:
             imagem = Image.open(caminho_imagem)
             tamanho_novo = (imagem.width * self.fator_escala, imagem.height * self.fator_escala)
