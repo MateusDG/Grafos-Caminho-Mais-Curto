@@ -69,23 +69,6 @@ class Teste:
         except Exception as e:
             messagebox.showerror("Erro ao Carregar Imagem", str(e))
 
-    def on_click(self, event):
-        x, y = event.x // self.fator_escala, event.y // self.fator_escala
-        if self.ponto_inicio == (x, y):
-            self.ponto_inicio = None
-            self.inicio_label.config(text="Ponto de início desmarcado.")
-        elif self.ponto_destino == (x, y):
-            self.ponto_destino = None
-            self.destino_label.config(text="Ponto de destino desmarcado.")
-        elif not self.ponto_inicio:
-            self.ponto_inicio = (x, y)
-            self.inicio_label.config(text=f"Ponto de início definido: {self.ponto_inicio}")
-        elif not self.ponto_destino:
-            self.ponto_destino = (x, y)
-            self.destino_label.config(text=f"Ponto de destino definido: {self.ponto_destino}")
-        else:
-            messagebox.showinfo("Informação", "Ponto de início e destino já definidos!")
-            
     def ler_bitmap(self, caminho_arquivo):
         with Image.open(caminho_arquivo) as img:
             img = img.convert('RGB')
@@ -182,8 +165,6 @@ class Teste:
             self.carregar_imagem(self.caminho_imagem)
             self.ponto_inicio = None
             self.ponto_destino = None
-            self.inicio_label.config(text="Ponto de início desmarcado.")
-            self.destino_label.config(text="Ponto de destino desmarcado.")
             self.caminho_label.config(text="Caminho desmarcado.")
 
 

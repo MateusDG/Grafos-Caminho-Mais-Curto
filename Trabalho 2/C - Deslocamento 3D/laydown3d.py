@@ -302,8 +302,6 @@ class Teste3D:
         # Reseta os pontos de início e destino e atualiza a interface
         self.ponto_inicio = None
         self.ponto_destino = None
-        self.inicio_label.config(text="Ponto de início desmarcado.")
-        self.destino_label.config(text="Ponto de destino desmarcado.")
         self.caminho_label.config(text="Caminho desmarcado.")
         self.btn_resetar.pack_forget()
         self.btn_salvar.pack_forget()

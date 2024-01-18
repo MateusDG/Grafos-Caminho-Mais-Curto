@@ -5,46 +5,37 @@ import heapq
 
 class Teste:
     def __init__(self):
-        # Aqui a gente começa configurando a janela principal.
         self.root = tk.Tk()
         self.root.title("Seletor de Ponto de Imagem")
         self.root.geometry("600x500")
 
-        # Agora, vamos mexer no visual dos botões e outros elementos.
         self.style = ttk.Style()
         self.style.theme_use("clam")
 
-        # Essas variáveis vão guardar informações importantes mais pra frente.
         self.ponto_inicio = None
         self.ponto_destino = None
         self.imagem_atual = None
         self.caminho_imagem = None
-        self.fator_escala = 8
+        self.fator_escala = 10
 
-        # Chama a função que monta a interface do usuário.
         self._setup_ui()
 
     def _setup_ui(self):
-        # Criando o layout, colocando uns botões, labels e tal.
         frame = ttk.Frame(self.root, padding="10")
         frame.pack(expand=True, fill=tk.BOTH)
 
-        # Botão para carregar a imagem.
         self.btn_carregar = ttk.Button(frame, text="Carregar Imagem", command=self.escolher_imagem)
         self.btn_carregar.pack(expand=True, pady=5)
 
-        # Botão que vai procurar o caminho na imagem.
         self.btn_buscar_caminho = ttk.Button(frame, text="Encontrar Caminho", command=self.executar_busca_caminho)
         self.btn_buscar_caminho.pack(expand=True, pady=5)
 
-        # Mais alguns botões que a gente vai usar depois.
         self.btn_resetar = ttk.Button(frame, text="Resetar Imagem", command=self.resetar_imagem)
         self.btn_resetar.pack_forget()
 
         self.btn_salvar = ttk.Button(frame, text="Salvar Imagem", command=self.salvar_imagem)
         self.btn_salvar.pack_forget()
         
-        # Uns labels pra mostrar informações.
         self.caminho_label = ttk.Label(frame, text="")
         self.caminho_label.pack(pady=5)
 
@@ -60,16 +51,12 @@ class Teste:
         self.status_label = ttk.Label(frame, text="")
         self.status_label.pack()
         
-
     def escolher_imagem(self):
         try:
-            # Aqui a gente abre uma janela pra escolher um arquivo de imagem.
             caminho_imagem = filedialog.askopenfilename()
             if caminho_imagem:
-                # Legal, escolheu a imagem. Agora vamos carregá-la.
                 self.caminho_imagem = caminho_imagem
                 imagem = Image.open(caminho_imagem)
-                # Dá um zoom na imagem pra ver melhor.
                 tamanho_novo = (imagem.width * self.fator_escala, imagem.height * self.fator_escala)
                 imagem = imagem.resize(tamanho_novo, Image.NEAREST)
                 # Converte a imagem pra um formato que dá pra mostrar na interface.
@@ -83,9 +70,7 @@ class Teste:
                 self.ponto_inicio = None
                 self.ponto_destino = None
         except Exception as e:
-            # Ops, deu ruim. Melhor avisar o usuário.
-            messagebox.showerror("Erro ao Carregar Imagem", str(e))
-            
+            messagebox.showerror("Erro ao Carregar Imagem", str(e))         
             
     def ler_bitmap(self, caminho_arquivo):
         # Abre a imagem e transforma em uma lista de pixels.
@@ -94,13 +79,10 @@ class Teste:
             largura, altura = img.size
             return list(img.getdata()), largura, altura
 
-
     def encontrar_pontos(self, pixels, largura, altura):
-        # Define as cores que representam o início e o destino.
         cor_inicio = (255, 0, 0)  # Vermelho
         cor_destino = (0, 255, 0)  # Verde
         ponto_inicio = ponto_destino = None
-
         # Cria uma matriz com os pixels da imagem.
         matriz = [pixels[i * largura:(i + 1) * largura] for i in range(altura)]
         for y in range(altura):
@@ -113,7 +95,6 @@ class Teste:
 
         return matriz, ponto_inicio, ponto_destino
 
-    
     def construir_grafo(self, matriz):
         altura = len(matriz)
         largura = len(matriz[0])
@@ -127,9 +108,9 @@ class Teste:
                         if 0 <= nx < largura and 0 <= ny < altura and matriz[ny][nx] != (0, 0, 0):
                             # Atribuir peso com base na cor do pixel
                             if matriz[ny][nx] == (128, 128, 128):  # Cinza escuro
-                                peso = 2
+                                peso = 4
                             elif matriz[ny][nx] == (196, 196, 196):  # Cinza claro
-                                peso = 1.5
+                                peso = 2
                             else:  # Branco ou outro
                                 peso = 1
                             grafo[(x, y)].append((nx, ny, peso))
@@ -163,7 +144,6 @@ class Teste:
             atual = anterior[atual]
         return caminho[::-1]
 
-
     def desenhar_caminho(self, caminho):
         # Abre a imagem original e desenha o caminho encontrado nela.
         with Image.open(self.caminho_imagem) as img:
@@ -178,7 +158,6 @@ class Teste:
             foto_atualizada = ImageTk.PhotoImage(img)
             self.label_imagem.config(image=foto_atualizada)
             self.label_imagem.image = foto_atualizada
-
 
     def executar_busca_caminho(self):
         # Primeiro passo, ler a imagem e encontrar os pontos de início e destino.
@@ -201,17 +180,13 @@ class Teste:
             else:
                 messagebox.showwarning("Aviso", "Pontos de início e destino não identificados na imagem.")
 
-
     def resetar_imagem(self):
         self.carregar_imagem(self.caminho_imagem)
         self.ponto_inicio = None
         self.ponto_destino = None
-        self.inicio_label.config(text="Ponto de início desmarcado.")
-        self.destino_label.config(text="Ponto de destino desmarcado.")
         self.caminho_label.config(text="Caminho desmarcado.")
         self.btn_resetar.pack_forget()
         self.btn_salvar.pack_forget()
-
 
     def salvar_imagem(self):
         if self.imagem_atual:

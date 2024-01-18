@@ -85,7 +85,6 @@ class Teste:
 
         return menor_caminho
 
-
     def bfs(self, grafo, inicio, destino):
         # Busca em largura para encontrar o menor caminho entre dois pontos.
         fila = deque([inicio])
@@ -126,7 +125,6 @@ class Teste:
             self.label_imagem.config(image=foto_atualizada)
             self.label_imagem.image = foto_atualizada
 
-
     def executar_busca_caminho(self):
         if self.caminho_imagem:
             pixels, largura, altura = self.ler_bitmap(self.caminho_imagem)
@@ -147,6 +145,7 @@ class Teste:
                 messagebox.showwarning("Aviso", "Ponto de início ou destinos não identificados.")
 
     def ler_bitmap(self, caminho_arquivo):
+        # Abre a imagem e transforma em uma lista de pixels.
         with Image.open(caminho_arquivo) as img:
             img = img.convert('RGB')
             largura, altura = img.size
@@ -182,14 +181,10 @@ class Teste:
                             grafo[(x, y)].append((nx, ny))
         return grafo
 
-
     def resetar_imagem(self):
         if self.caminho_imagem:
             self.carregar_imagem(self.caminho_imagem)  # Recarrega a imagem para remover o caminho
             self.ponto_inicio = None
-            # Não precisamos mais resetar o ponto_destino, já que estamos trabalhando com múltiplos destinos
-            self.inicio_label.config(text="Ponto de início desmarcado.")
-            # Removendo a referência ao ponto_destino, já que não é mais utilizado
             self.caminho_label.config(text="Caminho desmarcado.")
 
     def salvar_imagem(self):
