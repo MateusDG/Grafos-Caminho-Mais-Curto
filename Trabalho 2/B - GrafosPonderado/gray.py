@@ -59,14 +59,10 @@ class Teste:
                 imagem = Image.open(caminho_imagem)
                 tamanho_novo = (imagem.width * self.fator_escala, imagem.height * self.fator_escala)
                 imagem = imagem.resize(tamanho_novo, Image.NEAREST)
-                # Converte a imagem pra um formato que dá pra mostrar na interface.
                 foto = ImageTk.PhotoImage(imagem)
-                # Atualiza o label pra mostrar a imagem.
                 self.label_imagem.config(image=foto)
                 self.label_imagem.image = foto
-                # Guarda a imagem pra usar depois.
                 self.imagem_atual = imagem
-                # Reseta os pontos de início e destino, porque são pra essa imagem nova.
                 self.ponto_inicio = None
                 self.ponto_destino = None
         except Exception as e:
@@ -87,7 +83,6 @@ class Teste:
         matriz = [pixels[i * largura:(i + 1) * largura] for i in range(altura)]
         for y in range(altura):
             for x in range(largura):
-                # Procura pelos pixels que têm as cores de início e destino.
                 if matriz[y][x] == cor_inicio:
                     ponto_inicio = (x, y)
                 elif matriz[y][x] == cor_destino:
@@ -106,7 +101,6 @@ class Teste:
                     for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                         nx, ny = x + dx, y + dy
                         if 0 <= nx < largura and 0 <= ny < altura and matriz[ny][nx] != (0, 0, 0):
-                            # Atribuir peso com base na cor do pixel
                             if matriz[ny][nx] == (128, 128, 128):  # Cinza escuro
                                 peso = 4
                             elif matriz[ny][nx] == (196, 196, 196):  # Cinza claro

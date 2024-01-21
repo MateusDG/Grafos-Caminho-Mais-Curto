@@ -30,14 +30,12 @@ class Teste:
         self.btn_buscar_caminho = ttk.Button(frame, text="Encontrar Caminho", command=self.executar_busca_caminho)
         self.btn_buscar_caminho.pack(expand=True, pady=5)
 
-        # Mais alguns botões que a gente vai usar depois.
         self.btn_resetar = ttk.Button(frame, text="Resetar Imagem", command=self.resetar_imagem)
         self.btn_resetar.pack_forget()
 
         self.btn_salvar = ttk.Button(frame, text="Salvar Imagem", command=self.salvar_imagem)
         self.btn_salvar.pack_forget()
         
-        # Uns labels pra mostrar informações.
         self.caminho_label = ttk.Label(frame, text="")
         self.caminho_label.pack(pady=5)
 
@@ -117,7 +115,6 @@ class Teste:
             pixels = img.load()
             for x, y in caminho:
                 pixels[x, y] = (0, 0, 255)  # Desenha o caminho de azul.
-            # Ajusta o tamanho da imagem e atualiza na interface.
             tamanho_novo = (img.width * self.fator_escala, img.height * self.fator_escala)
             img = img.resize(tamanho_novo, Image.NEAREST)
             self.imagem_atual = img
@@ -136,7 +133,6 @@ class Teste:
                 if melhor_caminho:
                     self.desenhar_caminho(melhor_caminho)
                     self.caminho_label.config(text="Caminho mais curto encontrado.")
-                    # Exibe os botões de resetar e salvar após encontrar um caminho
                     self.btn_resetar.pack(expand=True, pady=5)
                     self.btn_salvar.pack(expand=True, pady=5)
                 else:
@@ -145,7 +141,6 @@ class Teste:
                 messagebox.showwarning("Aviso", "Ponto de início ou destinos não identificados.")
 
     def ler_bitmap(self, caminho_arquivo):
-        # Abre a imagem e transforma em uma lista de pixels.
         with Image.open(caminho_arquivo) as img:
             img = img.convert('RGB')
             largura, altura = img.size
@@ -173,7 +168,7 @@ class Teste:
         grafo = {}
         for y in range(altura):
             for x in range(largura):
-                if matriz[y][x] != (0, 0, 0):  # Ignora barreiras (preto)
+                if matriz[y][x] != (0, 0, 0):
                     grafo[(x, y)] = []
                     for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                         nx, ny = x + dx, y + dy
