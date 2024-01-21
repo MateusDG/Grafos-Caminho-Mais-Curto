@@ -23,18 +23,19 @@ class Teste3D:
         # Configuração inicial da janela Tkinter
         self.root = tk.Tk()
         self.root.title("Seletor de Ponto de Imagem 3D")
-        self.root.geometry("600x600")  # Aumentei um pouco o tamanho para acomodar os controles extras
+        self.root.geometry("800x660") 
 
         # Estilo para os widgets
         self.style = ttk.Style()
-        self.style.theme_use("clam")
+        self.style.theme_use("clam")  # Utilizando um tema mais moderno
 
         # Variáveis de estado para controle
         self.ponto_inicio = None
         self.ponto_destino = None
         self.imagens_atuais = []  # Lista para armazenar as imagens dos diferentes andares
         self.caminhos_imagem = []  # Lista para armazenar os caminhos dos arquivos de imagem
-        self.fator_escala = 3   # Fator de escala para redimensionar as imagens
+        self.fator_escala = 11  # Fator de escala para redimensionar as imagens
+        self.tamanhos_originais = []  # Lista para armazenar os tamanhos originais das imagens
 
         # Configuração da interface do usuário  
         self._setup_ui()
@@ -47,6 +48,13 @@ class Teste3D:
         # Botão para carregar múltiplas imagens (andares).
         self.btn_carregar = ttk.Button(frame, text="Carregar Imagens", command=self.escolher_imagens)
         self.btn_carregar.pack(expand=True, pady=5)
+
+        #Botão para resetar e salvar imagem
+        self.btn_resetar = ttk.Button(frame, text="Resetar Imagem", command=self.resetar_imagem)
+        self.btn_resetar.pack_forget()
+
+        self.btn_salvar = ttk.Button(frame, text="Salvar Imagem", command=self.salvar_imagem)
+        self.btn_salvar.pack_forget()
         
         # Novos controles para navegar entre andares
         self.andar_atual = 0
@@ -60,13 +68,6 @@ class Teste3D:
         # Botão que vai procurar o caminho na imagem.
         self.btn_buscar_caminho = ttk.Button(frame, text="Encontrar Caminho", command=self.executar_busca_caminho)
         self.btn_buscar_caminho.pack(expand=True, pady=5)
-
-        #Botão para resetar e salvar imagem
-        self.btn_resetar = ttk.Button(frame, text="Resetar Imagem", command=self.resetar_imagem)
-        self.btn_resetar.pack_forget()
-
-        self.btn_salvar = ttk.Button(frame, text="Salvar Imagem", command=self.salvar_imagem)
-        self.btn_salvar.pack_forget()
         
         # Uns labels pra mostrar informações.
         self.caminho_label = ttk.Label(frame, text="")
@@ -83,12 +84,18 @@ class Teste3D:
 
         self.status_label = ttk.Label(frame, text="")
         self.status_label.pack()
+        
+        self.peso_total_label = ttk.Label(frame, text="")
+        self.peso_total_label.pack(pady=5)
+
 
     # Função para escolher e carregar as imagens dos andares
     def escolher_imagens(self):
         caminhos_imagens = filedialog.askopenfilenames()
         if caminhos_imagens:
             self.caminhos_imagem = caminhos_imagens
+            self.imagens_atuais = [Image.open(caminho) for caminho in caminhos_imagens]
+            self.tamanhos_originais = [(img.width, img.height) for img in self.imagens_atuais]
             # Carrega as imagens e as converte em matrizes de pixels para processamento
             self.imagens_atuais = [Image.open(caminho) for caminho in caminhos_imagens]
             self.matrizes = [self.ler_bitmap(caminho) for caminho in self.caminhos_imagem]
@@ -109,16 +116,17 @@ class Teste3D:
             self.atualizar_exibicao_imagem(self.andar_atual)
 
     def atualizar_exibicao_imagem(self, andar):
-        # Atualiza a imagem exibida na interface com base no andar especificado
-        if 0 <= andar < len(self.imagens_atuais):
+        if 0 <= andar < len(self.imagens_atuais) and andar < len(self.tamanhos_originais):
             self.andar_atual = andar
             imagem = self.imagens_atuais[andar]
-            tamanho_novo = (imagem.width * self.fator_escala, imagem.height * self.fator_escala)
+            tamanho_original = self.tamanhos_originais[andar]
+            tamanho_novo = (tamanho_original[0] * self.fator_escala, tamanho_original[1] * self.fator_escala)
             imagem = imagem.resize(tamanho_novo, Image.NEAREST)
             foto = ImageTk.PhotoImage(imagem)
             self.label_imagem.config(image=foto)
             self.label_imagem.image = foto
             self.andar_label.config(text=f"Andar Atual: {self.andar_atual}")
+
 
     def ler_bitmap(self, caminho_arquivo):
         # Converte uma imagem em uma matriz de pixels para análise
@@ -210,25 +218,20 @@ class Teste3D:
         return grafo
 
     def dijkstra_para_mais_proximo(self, grafo, inicio, destinos):
-        # Implementação do algoritmo de Dijkstra para encontrar o caminho mais curto
-        # no grafo até o destino mais próximo
         dist = {v: float('inf') for v in grafo}
         dist[inicio] = 0
         pq = [(0, inicio)]
         anterior = {inicio: None}
-
         while pq:
             distancia_atual, vertice_atual = heapq.heappop(pq)
-
             if vertice_atual in destinos:
-                # Reconstruir o caminho a partir do ponto de destino encontrado
                 caminho = []
                 atual = vertice_atual
+                peso_total = distancia_atual  # Captura o peso total do caminho
                 while atual is not None:
                     caminho.append(atual)
                     atual = anterior[atual]
-                return caminho[::-1] # Retorna o caminho em ordem inversa
-
+                return caminho[::-1], peso_total  # Retorna o caminho e o peso total
             for vizinho in grafo[vertice_atual]:
                 nx, ny, nandar, peso = vizinho
                 distancia = distancia_atual + peso
@@ -236,8 +239,8 @@ class Teste3D:
                     dist[(nx, ny, nandar)] = distancia
                     anterior[(nx, ny, nandar)] = vertice_atual
                     heapq.heappush(pq, (distancia, (nx, ny, nandar)))
+        return None, 0  # Retorna None e peso 0 se nenhum caminho for encontrado
 
-        return None  # Retorna None se nenhum caminho for encontrado
 
     def desenhar_caminho(self, caminho):
         # Desenha o caminho encontrado nas imagens dos andares
@@ -285,10 +288,11 @@ class Teste3D:
             return
 
         grafo = self.construir_grafo()
-        caminho_encontrado = self.dijkstra_para_mais_proximo(grafo, self.ponto_inicio, set(pontos_destino))
+        caminho_encontrado, peso_total = self.dijkstra_para_mais_proximo(grafo, self.ponto_inicio, set(pontos_destino))
         if caminho_encontrado:
             self.desenhar_caminho(caminho_encontrado)
             self.caminho_label.config(text="Caminho mais curto encontrado.")
+            self.peso_total_label.config(text=f"Peso Total do Caminho: {peso_total}")  # Exibe o peso total
             self.btn_resetar.pack()
             self.btn_salvar.pack()
         else:
