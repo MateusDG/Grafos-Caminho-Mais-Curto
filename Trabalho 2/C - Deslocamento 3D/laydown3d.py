@@ -192,9 +192,9 @@ class Teste3D:
                                 # Define o peso com base na cor do pixel
                                 cor_pixel = self.matrizes[andar][ny][nx]
                                 if cor_pixel == (128, 128, 128):  # Cinza escuro
-                                    peso = 2
+                                    peso = 4
                                 elif cor_pixel == (196, 196, 196):  # Cinza claro
-                                    peso = 1.5
+                                    peso = 2
                                 else:  # Branco ou outro
                                     peso = 1
                                 grafo[(x, y, andar)].append((nx, ny, andar, peso))

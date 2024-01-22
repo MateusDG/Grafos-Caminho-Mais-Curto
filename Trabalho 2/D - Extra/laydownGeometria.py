@@ -35,7 +35,6 @@ class Teste:
         self.btn_salvar = ttk.Button(frame, text="Salvar Imagem", command=self.salvar_imagem)
         self.btn_salvar.pack_forget()
         
-        # Uns labels pra mostrar informações.
         self.caminho_label = ttk.Label(frame, text="")
         self.caminho_label.pack(pady=5)
 
@@ -84,7 +83,6 @@ class Teste:
         return menor_caminho
 
     def bfs(self, grafo, inicio, destino):
-        # Busca em largura para encontrar o menor caminho entre dois pontos.
         fila = deque([inicio])
         visitados = {inicio: None}
 
@@ -93,6 +91,10 @@ class Teste:
             
             if atual == destino:
                 break
+
+            # Verificar se 'atual' é um ponto válido no grafo
+            if atual not in grafo:
+                continue
 
             for vizinho in grafo[atual]:
                 if vizinho not in visitados:
@@ -107,22 +109,22 @@ class Teste:
             percurso.append(destino)
             destino = visitados[destino]
         return percurso[::-1]
+
     
     def desenhar_caminho(self, caminho, objeto_inicio):
-        # Abre a imagem original e desenha o caminho encontrado nela.
+        x_min, y_min, x_max, y_max, tipo_forma = objeto_inicio
+        tamanho_objeto = (x_max - x_min + 1, y_max - y_min + 1)
+
         with Image.open(self.caminho_imagem) as img:
             img = img.convert('RGB')
             pixels = img.load()
-            x_min, y_min, x_max, y_max = objeto_inicio
-            tamanho_objeto = (x_max - x_min + 1, y_max - y_min + 1)
-
             for pos in caminho:
+                x, y = pos
                 for dy in range(tamanho_objeto[1]):
                     for dx in range(tamanho_objeto[0]):
-                        x, y = pos[0] + dx, pos[1] + dy
-                        pixels[x, y] = (0, 0, 255)  # Desenha o objeto de azul.
+                        if 0 <= x + dx < img.width and 0 <= y + dy < img.height:
+                            pixels[x + dx, y + dy] = (0, 0, 255)  # Desenha o caminho de azul.
 
-            # Ajusta o tamanho da imagem e atualiza na interface.
             tamanho_novo = (img.width * self.fator_escala, img.height * self.fator_escala)
             img = img.resize(tamanho_novo, Image.NEAREST)
             self.imagem_atual = img
@@ -138,14 +140,22 @@ class Teste:
 
             if objeto_inicio and destinos:
                 grafo = self.construir_grafo(matriz, objeto_inicio)
-                melhor_caminho = self.encontrar_melhor_caminho(grafo, destinos)
-                if melhor_caminho:
-                    self.desenhar_caminho(melhor_caminho, objeto_inicio)
-                    self.caminho_label.config(text="Caminho mais curto encontrado.")
-                    self.btn_resetar.pack(expand=True, pady=5)
-                    self.btn_salvar.pack(expand=True, pady=5)
+                x_min, y_min = objeto_inicio[:2]  # Coordenadas do ponto de início
+
+                self.ponto_inicio = (x_min, y_min)
+
+                if (x_min, y_min) in grafo:  # Verificar se o ponto de início é válido no grafo
+                    melhor_caminho = self.encontrar_melhor_caminho(grafo, destinos)
+
+                    if melhor_caminho:
+                        self.desenhar_caminho(melhor_caminho, objeto_inicio)
+                        self.caminho_label.config(text="Caminho mais curto encontrado.")
+                        self.btn_resetar.pack(expand=True, pady=5)
+                        self.btn_salvar.pack(expand=True, pady=5)
+                    else:
+                        messagebox.showerror("Erro", "Caminho não encontrado para nenhum destino.")
                 else:
-                    messagebox.showerror("Erro", "Caminho não encontrado para nenhum destino.")
+                    messagebox.showerror("Erro", "Ponto de início não é válido.")
             else:
                 messagebox.showwarning("Aviso", "Ponto de início ou destinos não identificados.")
 
@@ -198,12 +208,13 @@ class Teste:
     def construir_grafo(self, matriz, objeto_inicio):
         altura = len(matriz)
         largura = len(matriz[0])
-        x_min, y_min, x_max, y_max = objeto_inicio
+        x_min, y_min, x_max, y_max, tipo_forma = objeto_inicio  # Adicionando tipo_forma
         tamanho_objeto = (x_max - x_min + 1, y_max - y_min + 1)
 
         grafo = {}
         for y in range(altura - tamanho_objeto[1] + 1):
             for x in range(largura - tamanho_objeto[0] + 1):
+                # Verificar se o objeto cabe nesta posição sem colidir com obstáculos
                 if self.espaco_livre_para_objeto(matriz, x, y, tamanho_objeto):
                     grafo[(x, y)] = self.vizinhos_para_objeto(x, y, largura, altura, tamanho_objeto)
 
