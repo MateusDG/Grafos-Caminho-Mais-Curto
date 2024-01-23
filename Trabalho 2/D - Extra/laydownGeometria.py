@@ -208,16 +208,14 @@ class Teste:
     def construir_grafo(self, matriz, objeto_inicio):
         altura = len(matriz)
         largura = len(matriz[0])
-        x_min, y_min, x_max, y_max, tipo_forma = objeto_inicio  # Adicionando tipo_forma
+        x_min, y_min, x_max, y_max, tipo_forma = objeto_inicio
         tamanho_objeto = (x_max - x_min + 1, y_max - y_min + 1)
 
         grafo = {}
         for y in range(altura - tamanho_objeto[1] + 1):
             for x in range(largura - tamanho_objeto[0] + 1):
-                # Verificar se o objeto cabe nesta posição sem colidir com obstáculos
                 if self.espaco_livre_para_objeto(matriz, x, y, tamanho_objeto):
-                    grafo[(x, y)] = self.vizinhos_para_objeto(x, y, largura, altura, tamanho_objeto)
-
+                    grafo[(x, y)] = self.vizinhos_para_objeto(matriz, x, y, largura, altura, tamanho_objeto)
         return grafo
 
     def espaco_livre_para_objeto(self, matriz, x, y, tamanho_objeto):
@@ -227,12 +225,13 @@ class Teste:
                     return False
         return True
 
-    def vizinhos_para_objeto(self, x, y, largura, altura, tamanho_objeto):
+    def vizinhos_para_objeto(self, matriz, x, y, largura, altura, tamanho_objeto):
         vizinhos = []
         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
             nx, ny = x + dx, y + dy
-            if 0 <= nx < largura - tamanho_objeto[0] + 1 and 0 <= ny < altura - tamanho_objeto[1] + 1:
-                vizinhos.append((nx, ny))
+            if 0 <= nx <= largura - tamanho_objeto[0] and 0 <= ny <= altura - tamanho_objeto[1]:
+                if self.espaco_livre_para_objeto(matriz, nx, ny, tamanho_objeto):
+                    vizinhos.append((nx, ny))
         return vizinhos
 
     def resetar_imagem(self):
