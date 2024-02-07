@@ -92,7 +92,6 @@ class Teste:
             if atual == destino:
                 break
 
-            # Verificar se 'atual' é um ponto válido no grafo
             if atual not in grafo:
                 continue
 
@@ -140,11 +139,11 @@ class Teste:
 
             if objeto_inicio and destinos:
                 grafo = self.construir_grafo(matriz, objeto_inicio)
-                x_min, y_min = objeto_inicio[:2]  # Coordenadas do ponto de início
+                x_min, y_min = objeto_inicio[:2]
 
                 self.ponto_inicio = (x_min, y_min)
 
-                if (x_min, y_min) in grafo:  # Verificar se o ponto de início é válido no grafo
+                if (x_min, y_min) in grafo: 
                     melhor_caminho = self.encontrar_melhor_caminho(grafo, destinos)
 
                     if melhor_caminho:
@@ -161,15 +160,14 @@ class Teste:
 
 
     def ler_bitmap(self, caminho_arquivo):
-        # Abre a imagem e transforma em uma lista de pixels.
         with Image.open(caminho_arquivo) as img:
             img = img.convert('RGB')
             largura, altura = img.size
             return list(img.getdata()), largura, altura
 
     def encontrar_pontos(self, pixels, largura, altura):
-        cor_inicio = (255, 0, 0)  # Vermelho
-        cor_destino = (0, 255, 0)  # Verde
+        cor_inicio = (255, 0, 0) 
+        cor_destino = (0, 255, 0)
         pontos_inicio = []
         destinos = []
 
@@ -202,7 +200,7 @@ class Teste:
         else:
             tipo_forma = "retângulo"
 
-        return (x_min, y_min, x_max, y_max, tipo_forma)  # Coordenadas e tipo da forma
+        return (x_min, y_min, x_max, y_max, tipo_forma) 
 
 
     def construir_grafo(self, matriz, objeto_inicio):
@@ -221,7 +219,7 @@ class Teste:
     def espaco_livre_para_objeto(self, matriz, x, y, tamanho_objeto):
         for dy in range(tamanho_objeto[1]):
             for dx in range(tamanho_objeto[0]):
-                if matriz[y + dy][x + dx] == (0, 0, 0):  # Obstáculo encontrado
+                if matriz[y + dy][x + dx] == (0, 0, 0): 
                     return False
         return True
 
@@ -236,7 +234,7 @@ class Teste:
 
     def resetar_imagem(self):
         if self.caminho_imagem:
-            self.carregar_imagem(self.caminho_imagem)  # Recarrega a imagem para remover o caminho
+            self.carregar_imagem(self.caminho_imagem) 
             self.ponto_inicio = None
             self.caminho_label.config(text="Caminho desmarcado.")
 
